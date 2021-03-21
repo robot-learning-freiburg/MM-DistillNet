@@ -11,7 +11,6 @@ class MTALoss(nn.Module):
         super(MTALoss, self).__init__()
         self.p = float(p)
         self.T = float(T)
-        print(f"Uisng T={T} and p={p}")
 
     def forward(self, g_s, g_t):
         #return sum([self.at_loss(f_s, f_t) for f_s, f_t in zip(g_s, g_t)])

@@ -1,8 +1,9 @@
 # -*- coding: utf-8 -*-
-"""Master Project -- Multi Modal Object Detection
+"""
+There is More than Meets the Eye: Self-Supervised Multi-Object Detection
+and Tracking with Sound by Distilling Multimodal Knowledge
 
-FreiburgSmallPassingCars RGB/thermal/Depth Dataset
-
+Code to read the associated dataset
 """
 
 # -------------------------------------------------------------------------------
@@ -65,7 +66,6 @@ class MultimodalDetection(BaseDataset):
                 A yielder object of images that ingerits from dataset
         """
 
-
         self.classes = [
             'aeroplane',
             'bicycle',
@@ -91,13 +91,10 @@ class MultimodalDetection(BaseDataset):
 
         super().__init__(config=config, mode=mode,classes=self.classes)
 
-        #self.crop_left = 150
-        #self.crop_right = 850
         self.crop_left = 200
         self.crop_right = 1720
         self.ir_minval = 21800
         self.ir_maxval = 25000
-        #self.ir_maxval = 23700
 
         # Empirically found with noise filtering histogram
         self.depth_max = 153
@@ -126,7 +123,7 @@ class MultimodalDetection(BaseDataset):
         for id in self.ids:
             drive, rgb_timestamp = id.split('/')
             secs, nsec, code = rgb_timestamp.split('_')
-            if len(nsec)< 9:
+            if len(nsec) < 9:
                 # Skip bogus times stamps
                 continue
             times.append(int(str(secs) + str(nsec)))
@@ -164,9 +161,13 @@ class MultimodalDetection(BaseDataset):
             self.data_path,
             drive,
             'fl_rgb_depth',
-            f"fl_rgb_{rgb_timestamp}.pfm"
+            # Due to size restrictions, we will allow a PNG
+            # rather than the PFM. This affects a bit performance
+            # but PFM space is very very big
+            # f"fl_rgb_{rgb_timestamp}.pfm"
+            f"fl_rgb_{rgb_timestamp}.png"
         )
-        ext = 'wav' if  'AudioAugmenter' in self.config[self.mode+'_transformations'] else 'pkl'
+        ext = 'pkl'
         if traditional_nms_kdlist_augmented:
             ext = 'wav'
         audio_paths = [os.path.join(
@@ -189,16 +190,12 @@ class MultimodalDetection(BaseDataset):
             print(f"rgb={rgb_path}")
         rgb = cv2.cvtColor(rgb, cv2.COLOR_BGR2RGB)
         rgb = rgb[:, self.crop_left:self.crop_right, :]
-        # resizing
-        #res = (960, 320)
-        #rgb = cv2.resize(rgb, res, interpolation=cv2.INTER_LINEAR)
 
         thermal = None
         if self.use_thermal:
             thermal = cv2.imread(thermal_path, cv2.IMREAD_ANYDEPTH)
             if thermal is None:
                 print(f"thermal={thermal_path}")
-            #thermal = cv2.resize(thermal, res, interpolation=cv2.INTER_LINEAR)
             thermal = thermal[:, self.crop_left:self.crop_right]
 
             # normalize IR data
@@ -217,10 +214,12 @@ class MultimodalDetection(BaseDataset):
 
         depth = None
         if self.use_depth:
-            depth = readPmf(depth_path)
-            #depth[depth > self.depth_max] = self.depth_max
-            depth = applyLogJetColorMap(depth)
-            depth = depth[:, self.crop_left:self.crop_right, :]
+            # Due to disk constraints, we only enable PNG
+            # Not the actual depth file
+            #depth = readPmf(depth_path)
+            #depth = applyLogJetColorMap(depth)
+            #depth = depth[:, self.crop_left:self.crop_right, :]
+            depth = cv2.imread(depth_path)
 
         audios = [
             pickle.load(
@@ -258,13 +257,7 @@ class MultimodalDetection(BaseDataset):
             thermal = thermal[:, :, None]
             thermal = np.transpose(np.array(thermal, dtype=np.float32), (2, 0, 1))
         if self.use_depth:
-            #depth = depth[:, :, None]
             depth = np.transpose(np.array(depth, dtype=np.float32), (2, 0, 1))
-
-        # This is mostly for evaluation. We have precompiled the predictions of the teachers
-        # This is why no scaling or anything is needed
-        #if self.use_lables:
-        #    label = get_annotations(id)
 
         return rgb, thermal, depth, audio, label, id
 
@@ -289,7 +282,6 @@ class MultimodalDetection(BaseDataset):
         rgb = cv2.imread(rgb_path)
         if rgb is None:
             raise Exception(f"rgb={rgb_path}")
-        #rgb = cv2.cvtColor(rgb, cv2.COLOR_BGR2RGB)
         rgb = rgb[:, self.crop_left:self.crop_right, :]
 
         thermal = None
@@ -311,7 +303,6 @@ class MultimodalDetection(BaseDataset):
         depth = None
         if self.use_depth:
             depth = readPmf(depth_path)
-            #depth[depth > self.depth_max] = self.depth_max
             depth = applyLogJetColorMap(depth)
             depth = depth[:, self.crop_left:self.crop_right, :]
 

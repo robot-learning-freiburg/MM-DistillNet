@@ -36,7 +36,6 @@ from PIL import Image
 
 import pandas as pd
 
-from src.fullcnn_net import FullCNNNet
 from src.datasets.transformations import (
     HSVAdjust,
     Normalizer,
@@ -48,21 +47,10 @@ from src.datasets.transformations import (
 from src.StereoSoundNet import StereoSoundNet
 
 from src.loss.AttentionLoss import AttentionLoss
-from src.loss.ABLoss import ABLoss
 from src.loss.MTALoss import MTALoss
-from src.loss.KLLoss import KLLoss
-from src.loss.GroupAttentionLoss import GroupAttentionLoss
-from src.loss.MultiTeacherPairWiseSimilarityLoss import MultiTeacherPairWiseSimilarityLoss
-from src.loss.MultiTeacherContrastiveAttentionLoss import MultiTeacherContrastiveAttentionLoss
-from src.loss.MultiTeacherTrippletAttentionLoss import MultiTeacherTrippletAttentionLoss
-from src.loss.CRDLoss import CRDLoss
 from src.loss.DistillKL import DistillKL
 from src.loss.FocalLoss import FocalLoss
 from src.loss.YetAnotherFocalLoss import YetAnotherFocalLoss
-from src.loss.NSTLoss import NSTLoss
-from src.loss.PKTLoss import PKTLoss
-from src.loss.SimilarityLoss import SimilarityLoss
-from src.loss.RankingLoss import RankingLoss
 
 
 from tabulate import tabulate
@@ -87,7 +75,6 @@ import hpbandster.visualization as hpvis
 from torchvision.ops import nms
 from src.YetAnotherEfficientDet import YetAnotherEfficientDet, YetAnotherEfficientDetBBoxTransform
 from src.YetAnotherEfficientDet_generator import YetAnotherEfficientDetGenerator
-from src.YetAnotherEfficientDetMultiHeaded import YetAnotherEfficientDetMultiHeaded
 from torchvision.ops.boxes import batched_nms
 
 
@@ -461,48 +448,28 @@ def load_model(model_type, config, modality=None):
             A loaded model of type model_type
     """
     model_dict = {
-        'EfficientDet' : {
-            'path': "trained_models/only_params_trained_EfficientDet",
-            'id': None,
-            'class': EfficientDet
-        },
-        'EfficientDet_kaist' : {
-            'path': "trained_models/only_params_trained_EfficientDet_kaist",
-            'id': None,
-            'class': EfficientDet
-        },
-        'EfficientDet_generator' : {
-            'path': "trained_models/only_params_trained_EfficientDet",
-            'id': None,
-            'class': EfficientDetGenerator
-        },
         'YetAnotherEfficientDet_D2' : {
             'path': "trained_models/yet-another-efficientdet-d2.pth",
-            #'path': "trained_models/efficientdet-d2.pth",
             'id': None,
             'class': YetAnotherEfficientDet
         },
         'YetAnotherEfficientDet_D2_embedding' : {
             'path': "trained_models/yet-another-efficientdet-d2.pth",
-            #'path': "trained_models/efficientdet-d2.pth",
             'id': None,
             'class': YetAnotherEfficientDet
         },
         'YetAnotherEfficientDetGenerator_D2' : {
             'path': "trained_models/yet-another-efficientdet-d2.pth",
-            #'path': "trained_models/efficientdet-d2.pth",
             'id': None,
             'class': YetAnotherEfficientDetGenerator
         },
         'YetAnotherEfficientDet_D2_input8' : {
             'path': "trained_models/yet-another-efficientdet-d2.pth",
-            #'path': "trained_models/efficientdet-d2.pth",
             'id': None,
             'class': YetAnotherEfficientDet
         },
         'YetAnotherEfficientDet_D2_input1' : {
             'path': "trained_models/yet-another-efficientdet-d2.pth",
-            #'path': "trained_models/efficientdet-d2.pth",
             'id': None,
             'class': YetAnotherEfficientDet
         },
@@ -537,19 +504,11 @@ def load_model(model_type, config, modality=None):
         # -----------------------------------------------------------
         'YetAnotherEfficientDet_D2_audio' : {
             'path': "trained_models/yet-another-efficientdet-d2-audio.pth",
-            #'path': "trained_models/efficientdet-d2.pth",
             'id': None,
             'class': YetAnotherEfficientDetGenerator
         },
-        'YetAnotherEfficientDetMultiHeaded_D2' : {
-            'path': "trained_models/yet-another-efficientdet-d2.pth",
-            #'path': "trained_models/efficientdet-d2.pth",
-            'id': None,
-            'class': YetAnotherEfficientDetMultiHeaded
-        },
         'YetAnotherEfficientDetGenerator_D2_STATIC' : {
             'path': "trained_models/yet-another-efficientdet-d2-audio-static.pth",
-            #'path': "trained_models/efficientdet-d2.pth",
             'id': None,
             'class': YetAnotherEfficientDet
         },
@@ -1481,6 +1440,8 @@ def extract_transformations(
     if mode == "train":
         config_trans = config['train_transformations']
     elif mode == "val":
+        config_trans = config['val_transformations']
+    elif mode == "test":
         config_trans = config['val_transformations']
     else:
         raise Exception(f"No valid mode provided")

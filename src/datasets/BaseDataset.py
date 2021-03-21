@@ -9,21 +9,15 @@ A base dataset from which to load config
 # General Inputs
 import logging
 import os
-import pickle
 import re
-import xml.etree.ElementTree as ET
 
 # Third Party
-import cv2
-
 import numpy as np
 
 import pandas as pd
 
 # Local Imports
 from src.utils.utils import (
-    EfficientDet_post_processing,
-    yolo_post_processing,
     extract_transformations,
     logits_to_ground_truth,
 )

@@ -1,8 +1,9 @@
 # -*- coding: utf-8 -*-
 """
-Master Project -- Multi Modal Object Detection
-This file reads a configuration file to train a teacher
-and student model on different settings
+There is More than Meets the Eye: Self-Supervised Multi-Object
+Detection and Tracking with Sound by Distilling Multimodal Knowledge
+This code reproduces the finding from the above
+paper
 """
 # -------------------------------------------------------------
 #                               Imports
@@ -10,7 +11,6 @@ and student model on different settings
 
 # General Inputs
 import argparse
-from collections import OrderedDict
 import configparser
 import logging
 import json
@@ -19,28 +19,18 @@ from datetime import datetime
 from logging.config import fileConfig
 
 # Local Imports
-from src.datasets.CarsAugmented import CarsAugmented
-from src.datasets.ArgoverseDataset import ArgoverseDataset
-from src.datasets.FLIRDataset import FLIRDataset
 from src.datasets.MultimodalDetection import MultimodalDetection
-from src.datasets.transformations import Compose
 from src.optimization.train_methods import train
 from src.utils.utils import (
-    extract_transformations,
     evaluate, load_model,
     filter_model_dict,
     make_reproducible_run,
-    weights_init,
     init_weights,
 )
 
 # Third Party
 import torch
-import torch.nn as nn
-from torch.autograd import Variable
 import torch.distributed as dist
-
-
 
 
 # ----------------------------------------------------------------------
@@ -132,13 +122,17 @@ def train_multimodal_detection(config):
     # Load the teachers model
     teacher_models = torch.nn.ModuleDict()
     if config.getboolean('use_rgb'):
-        teacher_models['rgb'] = load_model(config['teacher'], config, 'rgb').to(device)
+        teacher_models['rgb'] = load_model(config['teacher'],
+                                           config, 'rgb').to(device)
     if config.getboolean('use_audio'):
-        teacher_models['audio'] = load_model(config['teacher'], config, 'audio_static').to(device)
+        teacher_models['audio'] = load_model(config['teacher'],
+                                             config, 'audio_static').to(device)
     if config.getboolean('use_depth'):
-        teacher_models['depth'] = load_model(config['teacher'], config, 'depth').to(device)
+        teacher_models['depth'] = load_model(config['teacher'],
+                                             config, 'depth').to(device)
     if config.getboolean('use_thermal'):
-        teacher_models['thermal'] = load_model(config['teacher'], config, 'thermal').to(device)
+        teacher_models['thermal'] = load_model(config['teacher'],
+                                               config, 'thermal').to(device)
 
     # Make sure all teachers are in eval mode
     teacher_models.eval()
@@ -146,19 +140,7 @@ def train_multimodal_detection(config):
     # =========================Dataset===============================
     # Handle data
     logger.info("Obtaining the dataset...")
-    if config['dataset'] == 'VOCDataset':
-        dataset = VOCDataset
-    elif config['dataset'] == 'COCODataset':
-        dataset = COCODataset
-    elif config['dataset'] == 'CarsAugmented':
-        dataset = CarsAugmented
-    elif config['dataset'] == 'ArgoverseDataset':
-        dataset = ArgoverseDataset
-    elif config['dataset'] == 'CityScapesDataset':
-        dataset = CityScapesDataset
-    elif config['dataset'] == 'FLIRDataset':
-        dataset = FLIRDataset
-    elif config['dataset'] == 'MultimodalDetection':
+    if config['dataset'] == 'MultimodalDetection':
         dataset = MultimodalDetection
     else:
         raise Exception(f"Unsuported Dataset : {config['dataset']}")
@@ -179,7 +161,6 @@ def train_multimodal_detection(config):
     # Load pre-trained weights for sure but decide if we
     # un-train a weight via config
     if config.getboolean('weights_init'):
-        #init_weights(student_model)
         if hasattr(student_model.model_classifier, 'rgb'):
             init_weights(student_model.model_classifier.rgb.header)
             init_weights(student_model.model_regressor.rgb.header)
@@ -217,7 +198,8 @@ def train_multimodal_detection(config):
     # Evaluate the performance of the best run
     student_model = load_model(config['student'], config, 'audio_student').to(device)
     map_location = {'cuda:%d' % 0: f"cuda:{config['rank']}"}
-    checkpoint = torch.load(f"{config['exp_name']}/best.{config['rank']}.pth.tar", map_location=map_location)
+    checkpoint = torch.load(f"{config['exp_name']}/best.{config['rank']}.pth.tar",
+                            map_location=map_location)
     new_state_dict = filter_model_dict(student_model, checkpoint['state_dict'])
     # load params
     student_model.load_state_dict(new_state_dict)
@@ -245,7 +227,7 @@ if __name__ == "__main__":
     parser.add_argument(
         "--config_file",
         type=str,
-        default="configs/yolov2_ranking_traditional.cfg",
+        default="configs/best.cfg",
         help="Path to a configuration file"
     )
 
@@ -267,7 +249,7 @@ if __name__ == "__main__":
         "--local_rank",
         type=int,
         default=0,
-        help="This local_rank is used to set the device (i.e. which GPU to use) for the process."
+        help="This local_rank is used to set the device."
     )
     parser.add_argument(
         "--nodes",
@@ -309,7 +291,8 @@ if __name__ == "__main__":
     fileh.setLevel(logging.DEBUG)
     logger.addHandler(fileh)
 
-    # Taken from https://pytorch.org/tutorials/beginner/aws_distributed_training_tutorial.html
+    # Taken from
+    # https://pytorch.org/tutorials/beginner/aws_distributed_training_tutorial.html
     if (config.getint('ngpu') > 1) and config['engine'] == 'DistributedDataParallel':
         # Should run python train.py --rank 0 --local_rank 0 --checkpoint <>
         # Should run python train.py --rank 1 --local_rank 1 --checkpoint <>

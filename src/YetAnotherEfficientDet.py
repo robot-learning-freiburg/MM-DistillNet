@@ -472,19 +472,14 @@ class Regressor(nn.Module):
             before_head = feat
             feat = self.header(feat)
 
-            print(f"before perm feat={feat.shape}")
             feat = feat.permute(0, 2, 3, 1)
-            print(f"after perm feat={feat.shape}")
             feat = feat.contiguous().view(feat.shape[0], -1, 4)
 
             feats.append(feat)
             alignment.append(before_head)
 
 
-        #print([f.shape for f in feats])
         feats = torch.cat(feats, dim=1)
-        #print([f.shape for f in alignment])
-        #align_feature = torch.cat(alignment, dim=1)
 
         # The alignment has values [torch.Size([4, 258048, 4]), torch.Size([4, 64512, 4]), torch.Size([4, 16128, 4]), torch.Size([4, 4032, 4]), torch.Size([4, 1008, 4])
         # The features [torch.Size([4, 82944, 4]), torch.Size([4, 20736, 4]), torch.Size([4, 5184, 4]), torch.Size([4, 1296, 4]), torch.Size([4, 324, 4])]
@@ -640,7 +635,6 @@ class YetAnotherEfficientDet(nn.Module):
 
         num_anchors = len(self.aspect_ratios) * self.num_scales
         # 9 3 3
-        print(f"num_anchors={num_anchors} {len(self.aspect_ratios)} {self.num_scales} ")
 
         self.bifpn = nn.Sequential(
             *[BiFPN(self.fpn_num_filters[self.compound_coef],
@@ -669,9 +663,6 @@ class YetAnotherEfficientDet(nn.Module):
         max_size = inputs.shape[-1]
 
         _, p3, p4, p5 = self.backbone_net(inputs)
-        print(f"p3={p3.shape}")
-        print(f"p4={p4.shape}")
-        print(f"p5={p5.shape}")
 
         features = (p3, p4, p5)
         features = self.bifpn(features)
@@ -686,8 +677,6 @@ class YetAnotherEfficientDet(nn.Module):
             dim=2
         )
 
-        print(f"regresion={regression.shape}")
-        print(f"regresion={classification.shape}")
         if self.features_from == 'efficientnet':
             return [classification, regression, anchors], features
         elif self.features_from == 'header':

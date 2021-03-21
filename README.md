@@ -43,7 +43,15 @@ pip install -r requirements.txt
 ## Prepare datasets and configure run
 We also supply our large-scale multimodal dataset with over 113,000 time-synchronized frames of RGB,
 depth, thermal, and audio modalities, available here **TODO**.
+
+Please make sure the data is available in the directory under the name `data`.
+
 The binary download contains the expected folder format for our scripts to work. The path where the binary was extracted must be updated in the configuration files, in this case `configs/best.cfg`.
+
+Our dataset download also contains pre-trained teached models that need to be available during training:
+```bash
+ln -sf data/trained_models .
+```
 
 Additionally, the file `configs/best.cfg` contains support for different parallelization strategies and GPU/CPU support (using PyTorch's [DataParallel](https://pytorch.org/docs/stable/generated/torch.nn.DataParallel.html)  and [DistributedDataParallel](https://pytorch.org/docs/master/generated/torch.nn.parallel.DistributedDataParallel.html))
 
@@ -72,7 +80,7 @@ The evaluation results of our method, after bayesian optimization, are (more det
   |MM-DistillNet | RGB | 61.62 | 84.29 | 59.66 | 1.27 | 0.69 |
 
 ## Pre-Trained Models
-Our best pre-trained model can be found on `best_model/`.
+Our best pre-trained model can be found on the dataset installation path.
 
 ## Acknowledgements
 We have used utility functions from other open-source projects. We especially thank the authors of:

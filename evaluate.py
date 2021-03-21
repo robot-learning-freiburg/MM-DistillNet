@@ -162,16 +162,9 @@ if (device.type == 'cuda') and (config.getint('ngpu') > 1):
         )
 
 # Evaluation
-if not args.just_plot:
-    evaluate(
-        teacher_models,
-        student_model,
-        test_set,
-        config,
-    )
-
-plot_audio_predictions(
+evaluate(
+    teacher_models,
+    student_model,
     test_set,
     config,
-    model=student_model,
 )
