@@ -238,7 +238,7 @@ class BaseDataset(Dataset):
 
                 with torch.no_grad():
                     rgb = Variable(
-                        torch.FloatTensor(depth).unsqueeze(dim=0),
+                        torch.FloatTensor(rgb).unsqueeze(dim=0),
                         requires_grad=False
                     ).to(self.device)
                     logits, features = model(rgb)

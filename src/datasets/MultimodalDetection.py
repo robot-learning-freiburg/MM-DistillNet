@@ -161,15 +161,9 @@ class MultimodalDetection(BaseDataset):
             self.data_path,
             drive,
             'fl_rgb_depth',
-            # Due to size restrictions, we will allow a PNG
-            # rather than the PFM. This affects a bit performance
-            # but PFM space is very very big
-            # f"fl_rgb_{rgb_timestamp}.pfm"
-            f"fl_rgb_{rgb_timestamp}.png"
+            f"fl_rgb_{rgb_timestamp}.pfm"
         )
-        ext = 'pkl'
-        if traditional_nms_kdlist_augmented:
-            ext = 'wav'
+        ext = 'wav'
         audio_paths = [os.path.join(
             self.data_path,
             drive,
@@ -216,17 +210,14 @@ class MultimodalDetection(BaseDataset):
         if self.use_depth:
             # Due to disk constraints, we only enable PNG
             # Not the actual depth file
-            #depth = readPmf(depth_path)
-            #depth = applyLogJetColorMap(depth)
-            #depth = depth[:, self.crop_left:self.crop_right, :]
-            depth = cv2.imread(depth_path)
+            depth = readPmf(depth_path)
+            depth = applyLogJetColorMap(depth)
+            depth = depth[:, self.crop_left:self.crop_right, :]
 
-        audios = [
-            pickle.load(
-                open(audio_path, 'rb'), encoding='latin1'
-            ) for audio_path in audio_paths
-        ]
-        audio = np.transpose(np.stack(audios), (1, 2, 0))
+        audio = []
+        for audio_path in audio_paths:
+            y, sr = librosa.load(audio_path, sr=44100)
+            audio.append(y)
 
         # Normalize to 1
         if self.normalize:
