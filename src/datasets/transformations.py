@@ -473,10 +473,12 @@ class AudioAugmenter(object):
         rgb, thermal, depth, audio, label, id = data
 
         augmentation = np.random.choice([
+            # We also tried several audio transformations.
+            # We did not observe an improvement from them.
             'None',
             #'pitch',
             #'speed',
-            'distribution_noise',
+            #'distribution_noise',
             #'value', #Value says how far away the car is
         ])
 
