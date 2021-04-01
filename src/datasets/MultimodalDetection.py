@@ -161,7 +161,7 @@ class MultimodalDetection(BaseDataset):
             self.data_path,
             drive,
             'fl_rgb_depth',
-            f"fl_rgb_{rgb_timestamp}.pfm"
+            f"fl_rgb_{rgb_timestamp}.png"
         )
         ext = 'wav'
         audio_paths = [os.path.join(
@@ -210,8 +210,10 @@ class MultimodalDetection(BaseDataset):
         if self.use_depth:
             # Due to disk constraints, we only enable PNG
             # Not the actual depth file
-            depth = readPmf(depth_path)
-            depth = applyLogJetColorMap(depth)
+            #depth = readPmf(depth_path)
+            #depth = applyLogJetColorMap(depth)
+            #depth = depth[:, self.crop_left:self.crop_right, :]
+            depth = cv2.imread(depth_path)
             depth = depth[:, self.crop_left:self.crop_right, :]
 
         audio = []
