@@ -149,21 +149,21 @@ class MultimodalDetection(BaseDataset):
             self.data_path,
             drive,
             "fl_rgb",
-            f"fl_rgb_{rgb_timestamp}.png"
+            f"fl_rgb_{rgb_timestamp}.jpg"
         )
         thermal_path = os.path.join(
             self.data_path,
             drive,
             'fl_ir_aligned',
-            f"fl_ir_aligned_{rgb_timestamp}.png"
+            f"fl_ir_aligned_{rgb_timestamp}.jpg"
         )
         depth_path = os.path.join(
             self.data_path,
             drive,
             'fl_rgb_depth',
-            f"fl_rgb_{rgb_timestamp}.png"
+            f"fl_rgb_{rgb_timestamp}.jpg"
         )
-        ext = 'wav'
+        ext = 'pkl'
         audio_paths = [os.path.join(
             self.data_path,
             drive,
@@ -208,7 +208,7 @@ class MultimodalDetection(BaseDataset):
 
         depth = None
         if self.use_depth:
-            # Due to disk constraints, we only enable PNG
+            # Due to disk constraints, we only enable jpg
             # Not the actual depth file
             #depth = readPmf(depth_path)
             #depth = applyLogJetColorMap(depth)
@@ -216,10 +216,12 @@ class MultimodalDetection(BaseDataset):
             depth = cv2.imread(depth_path)
             depth = depth[:, self.crop_left:self.crop_right, :]
 
-        audio = []
-        for audio_path in audio_paths:
-            y, sr = librosa.load(audio_path, sr=44100)
-            audio.append(y)
+        audios = [
+            pickle.load(
+                open(audio_path, 'rb'), encoding='latin1'
+            ) for audio_path in audio_paths
+        ]
+        audio = np.transpose(np.stack(audios), (1, 2, 0))
 
         # Normalize to 1
         if self.normalize:
