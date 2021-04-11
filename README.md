@@ -55,6 +55,13 @@ ln -sf data/trained_models .
 
 Additionally, the file `configs/best.cfg` contains support for different parallelization strategies and GPU/CPU support (using PyTorch's [DataParallel](https://pytorch.org/docs/stable/generated/torch.nn.DataParallel.html)  and [DistributedDataParallel](https://pytorch.org/docs/master/generated/torch.nn.parallel.DistributedDataParallel.html))
 
+Due to disk space constraints, we provide a mp3 version of the audio files. Librosa is known to be slow with mp3 files, so we also provide a mp3->pickle conversion utility. The idea is,
+that before training we convert the audio files to a spectogram and store it to a pickle file.
+
+```bash
+mp3_to_pkl.py --dir <path to the dataset>
+```
+
 ## Training and Evaluation
 ### Training Procedure
 Edit the config file appropriately in configs folder. Our best recipe is found under `configs/best.cfg`.
