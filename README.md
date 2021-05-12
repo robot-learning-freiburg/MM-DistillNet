@@ -42,7 +42,7 @@ pip install -r requirements.txt
 
 ## Prepare datasets and configure run
 We also supply our large-scale multimodal dataset with over 113,000 time-synchronized frames of RGB,
-depth, thermal, and audio modalities, available here **TODO**.
+depth, thermal, and audio modalities, available at http://multimodal-distill.cs.uni-freiburg.de/#dataset
 
 Please make sure the data is available in the directory under the name `data`.
 
