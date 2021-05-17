@@ -46,14 +46,20 @@ depth, thermal, and audio modalities, available at http://multimodal-distill.cs.
 
 Please make sure the data is available in the directory under the name `data`.
 
-The binary download contains the expected folder format for our scripts to work. The path where the binary was extracted must be updated in the configuration files, in this case `configs/best.cfg`.
+The binary download contains the expected folder format for our scripts to work. The path where the binary was extracted must be updated in the configuration files, in this case `configs/mm-distillnet.cfg`.
 
-Our dataset download also contains pre-trained teached models that need to be available during training:
+You will also need to download our trained teacher-models available [here](http://multimodal-distill.cs.uni-freiburg.de/static/dist/mm-distillnet_trained.tar.gz). Kindly download this files and have them available in the current directory, with the name of `trained_models`. The directory structure should look something like this:
 ```bash
-ln -sf data/trained_models .
+>ls
+configs/  evaluate.py  images/  LICENSE  logs/  mp3_to_pkl.py  README.md  requirements.txt  setup.cfg  src/  train.py trained_models/
+
+>ls trained_models
+LICENSE.txt              README.txt                             yet-another-efficientdet-d2-embedding.pth  yet-another-efficientdet-d2-rgb.pth
+mm-distillnet.0.pth.tar  yet-another-efficientdet-d2-depth.pth  yet-another-efficientdet-d2.pth            yet-another-efficientdet-d2-thermal.pth
+
 ```
 
-Additionally, the file `configs/best.cfg` contains support for different parallelization strategies and GPU/CPU support (using PyTorch's [DataParallel](https://pytorch.org/docs/stable/generated/torch.nn.DataParallel.html)  and [DistributedDataParallel](https://pytorch.org/docs/master/generated/torch.nn.parallel.DistributedDataParallel.html))
+Additionally, the file `configs/mm-distillnet.cfg` contains support for different parallelization strategies and GPU/CPU support (using PyTorch's [DataParallel](https://pytorch.org/docs/stable/generated/torch.nn.DataParallel.html)  and [DistributedDataParallel](https://pytorch.org/docs/master/generated/torch.nn.parallel.DistributedDataParallel.html))
 
 Due to disk space constraints, we provide a mp3 version of the audio files. Librosa is known to be slow with mp3 files, so we also provide a mp3->pickle conversion utility. The idea is,
 that before training we convert the audio files to a spectogram and store it to a pickle file.
@@ -64,7 +70,7 @@ mp3_to_pkl.py --dir <path to the dataset>
 
 ## Training and Evaluation
 ### Training Procedure
-Edit the config file appropriately in configs folder. Our best recipe is found under `configs/best.cfg`.
+Edit the config file appropriately in configs folder. Our best recipe is found under `configs/mm-distillnet.cfg`.
 
 ```
 python train.py --config <path to a config file>
@@ -73,7 +79,7 @@ To run the full dataset
 We our method using 4 GPUs with 2.4 Gb memory each (The expected runtime is 7 days). After training, the best model would be stored under `<exp_name>/best.pth.tar`. This file can be used to evaluate the performance of the model.
 
 ### Evaluation Procedure
-Evaluate the performance of the model:
+Evaluate the performance of the model (Our best model can be found under `trained_models/mm-distillnet.0.pth.tar`):
 ```
 python evaluate.py --config <path to a config file> --checkpoint <path to checkpoint file to evaluate>
 ```
